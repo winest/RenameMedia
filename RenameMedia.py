@@ -124,6 +124,7 @@ def RenameByFileName( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 strNewBaseName += "-" + aryDateTime.group( 1 )
             strNewFileName = GetNewFileName( aDirName , strNewBaseName , aExt )
             bRet = True
+            break
 
 
 
