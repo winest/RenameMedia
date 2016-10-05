@@ -18,10 +18,10 @@ import exifread
 g_reExifTime = re.compile( r"^([0-9]{4}):([0-9]{2}):([0-9]{2}) ([0-9]{2}):([0-9]{2}):([0-9]{2})$" )
 
 #My-Description-Screenshot_2016-07-31-20-50-59-My-Description, My-Description-C360_2016-07-31-20-50-59-123-My-Description
-g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360)[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
+g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360)?[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
 
 #My-Description-1472373079120-My-Description, My-Description-FB_IMG_1469184029530-My-Description
-g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)[-_]?([0-9]{10,13})-?(.*)$" )
+g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[-_]?([0-9]{10,13})-?(.*)$" )
 
 
 
