@@ -106,7 +106,7 @@ def TryRenameFile( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
         
         strNewFileName = GetNewFileName( aDirName , strNewBaseName , aExt )
         logging.info( "{} => {}".format(aFileName , strNewFileName) )
-        #os.rename( aFilePath , aDirName + strNewFileName )
+        os.rename( aFilePath , aDirName + strNewFileName )
         return True
 
 
@@ -134,6 +134,8 @@ def GetTimeByExif( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
     else :
         logging.debug( "EXIF not found. aFilePath={}".format(aFilePath) )
 
+    if dateFinal :
+        logging.info( "GetTimeByExif() succeed" )
     return dateFinal
 
 
@@ -167,6 +169,8 @@ def GetTimeByFileName( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
     else :
         logging.debug( "Time not found in filename. aFilePath={}".format(aFilePath) )
 
+    if dateFinal :
+        logging.info( "GetTimeByFileName() succeed" )
     return dateFinal
 
 
@@ -202,7 +206,9 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 break
     else :
         logging.warning( "MediaInfo not found. aFilePath={}".format(aFilePath) )
-    
+
+    if dateFinal :
+        logging.info( "GetTimeByMediaInfo() succeed" )
     return dateFinal
 
 
