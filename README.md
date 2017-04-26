@@ -1,7 +1,16 @@
 ## About RenameMedia
 
-RenameMedia is a utility which parse media file EXIF or filename
-to get the creation date, and use the date to rename the file.
+RenameMedia is a utility which rename all files to their creation date.
+The parsing mechanism is prioritize by
+1. EXIF
+2. Filename
+3. MediaInfo
+4. Creation/LastModification Date
+
+
+
+## Prerequisite
+pip3 install exifread pymediainfo
 
 
 
