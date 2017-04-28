@@ -15,7 +15,7 @@ from pymediainfo import MediaInfo
 #ExtName = .444
 
 #Ignore if the time we parsed is earlier than this
-g_dateEarliest = datetime.datetime.strptime( "19991231_235959.999" , "%Y%m%d_%H%M%S.%f" )
+g_dateEarliest = datetime.datetime.strptime( "20041231_235959.999" , "%Y%m%d_%H%M%S.%f" )
 
 #Our goal is to rename file to the format of YYMMDD_HHMMSS-Description
 #My-Description-20120131_112233-My-Description
@@ -215,7 +215,7 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
 
 
 if __name__ == "__main__" :
-    strScriptDir = os.path.dirname( os.path.realpath(__file__) )
+    strScriptDir = os.path.dirname( os.path.realpath(sys.argv[0]) )
     strLogDir = "{}\\Logs".format( strScriptDir )
     if not os.path.isdir( strLogDir ) :
         os.makedirs( strLogDir )
