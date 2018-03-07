@@ -26,6 +26,10 @@ g_reAlreadyRenamed = re.compile( r"^(.*?-)?[0-9]{8}_[0-9]{6}(-.*)?$" )
 #My-Description-call_17-25-55_IN_0934023893-My-Description
 g_reCallLogInfo = re.compile( r"^(.*?)-?call_([0-9]{2})-([0-9]{2})-([0-9]{2})_(IN|OUT)_([0-9]{7,})-?(.*)$" )
 
+#My-Description-00000PORTRAIT_00000_BURST20180219112226674-My-Description
+#My-Description-00100dPORTRAIT_00100_BURST20180219112230359_COVER-My-Description
+g_reProtrait = re.compile( r"^(.*?)-?([0-9]+)?PORTRAIT_([0-9]+)?_BURST([0-9]+)?(_COVER)?-?(.*)$" )
+
 #My-Description-Screenshot_2016-07-31-20-50-59-My-Description, My-Description-C360_2016-07-31-20-50-59-123-My-Description
 g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
 
@@ -66,6 +70,16 @@ def GetComments( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 strComment += "-" + aryCallLogInfo.group( 1 )
             if aryCallLogInfo.group(7) and len( aryCallLogInfo.group(7) ) > 0 :
                 strComment += "-" + aryCallLogInfo.group( 7 )
+            break
+
+        #My-Description-00000PORTRAIT_00000_BURST20180219112226674-My-Description
+        #My-Description-00100dPORTRAIT_00100_BURST20180219112230359_COVER-My-Description
+        aryCallPortrait = g_reProtrait.match( aBaseName )
+        if ( aryCallPortrait ) :
+            if aryCallPortrait.group(1) and len( aryCallPortrait.group(1) ) > 0 :
+                strComment += "-" + aryCallPortrait.group( 1 )
+            if aryCallPortrait.group(6) and len( aryCallPortrait.group(6) ) > 0 :
+                strComment += "-" + aryCallPortrait.group( 6 )
             break
 
         #My-Description-C360_2016-07-31-20-50-59-123-My-Description
@@ -215,7 +229,6 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
 
 
 if __name__ == "__main__" :
-    strScriptDir = os.path.dirname( os.path.realpath(sys.argv[0]) )
     strLogDir = "{}\\Logs".format( strScriptDir )
     if not os.path.isdir( strLogDir ) :
         os.makedirs( strLogDir )
@@ -239,7 +252,7 @@ if __name__ == "__main__" :
 
 
 
-    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|mp3|mp4|m4a|amr|aac|flac)$" , re.IGNORECASE )
+    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|mp3|mp4|mov|m4a|amr|aac|flac)$" , re.IGNORECASE )
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
@@ -264,7 +277,7 @@ if __name__ == "__main__" :
                             strDir += "\\"
                         TryRenameFile( strPath , strDir , strFileName , strBaseName , strExt )
         else :
-            logging.info( "Usage: {} <file or directory path>".format( os.path.basename( sys.argv[0] ) ) )
+            logging.info( "Usage: {} <file or directory path>".format( os.path.basename(__file__) ) )
     except Exception as ex :
         logging.exception( "strPath={}".format(strPath) )
 
