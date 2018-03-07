@@ -229,6 +229,7 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
 
 
 if __name__ == "__main__" :
+    strScriptDir = os.path.dirname( os.path.realpath(__file__) )
     strLogDir = "{}\\Logs".format( strScriptDir )
     if not os.path.isdir( strLogDir ) :
         os.makedirs( strLogDir )
