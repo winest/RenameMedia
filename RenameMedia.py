@@ -257,7 +257,7 @@ if __name__ == "__main__" :
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
-            strToolDir = "{}\\_Tools\\".format( strScriptDir )
+            strToolDir = "{}\\_Tools\\x86\\".format( strScriptDir )
             os.environ["PATH"] = strToolDir + ";" + os.environ["PATH"]
 
         logging.info( "Search {} under \"{}\"".format(reFilter,strPath) )
