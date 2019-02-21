@@ -31,7 +31,7 @@ g_reCallLogInfo = re.compile( r"^(.*?)-?call_([0-9]{2})-([0-9]{2})-([0-9]{2})_(I
 g_reProtrait = re.compile( r"^(.*?)-?([0-9]+)?PORTRAIT_([0-9]+)?_BURST([0-9]+)?(_COVER)?-?(.*)$" )
 
 #My-Description-Screenshot_2016-07-31-20-50-59-My-Description, My-Description-C360_2016-07-31-20-50-59-123-My-Description
-g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
+g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|Recorder|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
 
 #My-Description-1472373079120-My-Description, My-Description-FB_IMG_1469184029530-My-Description
 g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[-_]?([0-9]{10,13})-?(.*)$" )
