@@ -9,10 +9,10 @@ The parsing mechanism is prioritize by
 
 
 
-## Prerequisite
+## Prerequisite when using python version
 pip3 install exifread pymediainfo
 
 
 
 ## Author
-[ChienWei Hung] (https://www.linkedin.com/profile/view?id=351402223)
+[ChienWei Hung](https://www.linkedin.com/profile/view?id=351402223)
