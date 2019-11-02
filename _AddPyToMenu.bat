@@ -72,6 +72,7 @@ function GetFilePath( aFileName , aSearchDirList , aSearchEnvList )
             {
                 strExePath = strDir + "\\" + aFileName;
                 bFound = true;
+                break;
             }
         }
     }
@@ -91,7 +92,12 @@ function GetFilePath( aFileName , aSearchDirList , aSearchEnvList )
                 {
                     strExePath = strDir + "\\" + aFileName;
                     bFound = true;
+                    break;
                 }
+            }
+            if ( bFound )
+            {
+                break;
             }
         }
     }
