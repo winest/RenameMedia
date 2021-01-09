@@ -253,7 +253,7 @@ if __name__ == "__main__" :
 
 
 
-    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|mp3|mp4|mov|m4a|amr|aac|flac)$" , re.IGNORECASE )
+    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
