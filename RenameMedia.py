@@ -31,10 +31,13 @@ g_reCallLogInfo = re.compile( r"^(.*?)-?call_([0-9]{2})-([0-9]{2})-([0-9]{2})_(I
 g_reProtrait = re.compile( r"^(.*?)-?([0-9]+)?PORTRAIT_([0-9]+)?_BURST([0-9]+)?(_COVER)?-?(.*)$" )
 
 #My-Description-Screenshot_2016-07-31-20-50-59-My-Description, My-Description-C360_2016-07-31-20-50-59-123-My-Description
-g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|Recorder|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})[ -_:]([0-9]{2})([ -_:][0-9]{3})?-?(.*)$" )
+g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|Recorder|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})([ _:-][0-9]{3})?-?(.*)$" )
+
+#My-Description-SKY_20201103_052334_-My-Description, My-Description-SKY_20200819_000334_3083294833422349157-My-Description
+g_reDateTimeBetter = re.compile( r"^(.*?)-?(SKY_)?([0-9]{8}_[0-9]{6})_?([0-9]+)?-?(.*)?$" )
 
 #My-Description-1472373079120-My-Description, My-Description-FB_IMG_1469184029530-My-Description
-g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[-_]?([0-9]{10,13})-?(.*)$" )
+g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[_-]?([0-9]{10,13})-?(.*)$" )
 
 
 
@@ -89,6 +92,16 @@ def GetComments( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 strComment += "-" + aryDateTime.group( 1 )
             if aryDateTime.group(10) and len( aryDateTime.group(10) ) > 0 :
                 strComment += "-" + aryDateTime.group( 10 )
+            break
+
+        #My-Description-SKY_20201103_052334_-My-Description
+        #My-Description-SKY_20200819_000334_3083294833422349157-My-Description
+        aryDateTimeBetter = g_reDateTimeBetter.match( aBaseName )
+        if ( aryDateTimeBetter ) :
+            if aryDateTimeBetter.group(1) and len( aryDateTimeBetter.group(1) ) > 0 :
+                strComment += "-" + aryDateTimeBetter.group( 1 )
+            if aryDateTimeBetter.group(5) and len( aryDateTimeBetter.group(5) ) > 0 :
+                strComment += "-" + aryDateTimeBetter.group( 5 )
             break
 
         #My-Description-FB_IMG_1469184029530-My-Description
@@ -165,6 +178,17 @@ def GetTimeByFileName( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                                               hour=(int)(aryDateTime.group(6)) , minute=(int)(aryDateTime.group(7)) , second=(int)(aryDateTime.group(8)) )
             if g_dateEarliest < dateDateTime and dateDateTime < datetime.datetime.now() :
                 dateFinal = dateDateTime
+                break
+
+
+
+        #My-Description-SKY_20201103_052334_-My-Description
+        #My-Description-SKY_20200819_000334_3083294833422349157-My-Description
+        aryDateTimeBetter = g_reDateTimeBetter.match( aBaseName )
+        if ( aryDateTimeBetter ) :
+            dateDateTimeBetter = datetime.datetime.strptime( aryDateTimeBetter.group(3) , "%Y%m%d_%H%M%S" )
+            if g_dateEarliest < dateDateTimeBetter and dateDateTimeBetter < datetime.datetime.now() :
+                dateFinal = dateDateTimeBetter
                 break
 
 
