@@ -39,7 +39,7 @@ g_reDateTimeBetter = re.compile( r"^(.*?)-?(SKY_)?([0-9]{8}_[0-9]{6})_?([0-9]+)?
 #My-Description-1472373079120-My-Description, My-Description-FB_IMG_1469184029530-My-Description
 g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[_-]?([0-9]{10,13})-?(.*)$" )
 
-
+g_reUselessComment = re.compile( r"^-(IMG|PANO|VID)_$" )
 
 
 
@@ -113,6 +113,8 @@ def GetComments( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 strComment += "-" + aryTimeStamp.group( 4 )
             break
 
+    if g_reUselessComment.match(strComment):
+        strComment = None
     return strComment
 
 
@@ -277,7 +279,7 @@ if __name__ == "__main__" :
 
 
 
-    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
+    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|gif|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
