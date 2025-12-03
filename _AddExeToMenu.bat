@@ -12,7 +12,7 @@ WScript.Echo( "Current directory is \"" + WshShell.CurrentDirectory + "\"" );
 
 //Use * for files
 //Use AllFilesystemObjects for files and directories
-if ( true == WriteReg( "HKEY_CLASSES_ROOT\\AllFilesystemObjects\\shell\\RenameMedia\\Command\\" , "\"" + WshShell.CurrentDirectory + "\\RenameMedia.exe\" \"%1\"" , "REG_SZ" ) )
+if ( true == WriteReg( "HKEY_CLASSES_ROOT\\AllFilesystemObjects\\shell\\RenameMedia\\Command\\" , "\"" + WshShell.CurrentDirectory + "\\Output\\RenameMedia.exe\" \"%1\"" , "REG_SZ" ) )
 {
     WScript.Echo( "Successfully End" );
     WScript.Quit( 0 );

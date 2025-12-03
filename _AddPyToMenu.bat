@@ -12,10 +12,10 @@ var WshShell = WScript.CreateObject( "WScript.Shell" );
 var WshEnv = WshShell.Environment( "Process" )
 WScript.Echo( "Current directory is \"" + WshShell.CurrentDirectory + "\"" );
 
-var strFilePath32 = GetFilePath( "python3.exe" , null , ["%PATH%"] );
+var strFilePath32 = GetFilePath( "python.exe" , null , ["%PATH%"] );
 if ( strFilePath32.length == 0 )
 {
-    WScript.Echo( "Cannot find python3.exe in current folder or PATH" );
+    WScript.Echo( "Cannot find python.exe in current folder or PATH" );
     WScript.Quit( -1 );
 }
 WScript.Echo( "FilePath32 is \"" + strFilePath32 + "\"" );

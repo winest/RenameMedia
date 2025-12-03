@@ -228,7 +228,10 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
             dateCreation = datetime.datetime.now()
             dateModification = datetime.datetime.now()
             if track.encoded_date :
-                dateEncoded = datetime.datetime.strptime( track.encoded_date , "UTC %Y-%m-%d %H:%M:%S" ) + ( datetime.datetime.now() - datetime.datetime.utcnow() )
+                try:
+                    dateEncoded = datetime.datetime.strptime( track.encoded_date , "UTC %Y-%m-%d %H:%M:%S" ) + ( datetime.datetime.now() - datetime.datetime.utcnow() )
+                except ValueError as err:
+                    dateEncoded = datetime.datetime.strptime( track.encoded_date , "%Y-%m-%d %H:%M:%S UTC" ) + ( datetime.datetime.now() - datetime.datetime.utcnow() )
                 if track.duration :
                     dateEncoded = dateEncoded - datetime.timedelta( milliseconds=track.duration )
                 if g_dateEarliest < dateEncoded and dateEncoded < dateFinal :
@@ -279,7 +282,7 @@ if __name__ == "__main__" :
 
 
 
-    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|gif|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
+    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|gif|heic|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
