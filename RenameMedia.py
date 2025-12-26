@@ -132,7 +132,7 @@ def TryRenameFile( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
         strComment = GetComments( strPath , strDir , strFileName , strBaseName , strExt )
         if len(strComment) > 0 :
             strNewBaseName += strComment
-        
+
         strNewFileName = GetNewFileName( aDirName , strNewBaseName , aExt )
         logging.info( "{} => {}".format(aFileName , strNewFileName) )
         os.rename( aFilePath , aDirName + strNewFileName )
@@ -171,12 +171,12 @@ def GetTimeByExif( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
 
 def GetTimeByFileName( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
     dateFinal = None
-    
+
     for count in range( 1 ) :
         #My-Description-C360_2016-07-31-20-50-59-123-My-Description
         aryDateTime = g_reDateTime.match( aBaseName )
         if ( aryDateTime ) :
-            dateDateTime = datetime.datetime( year=(int)(aryDateTime.group(3)) , month=(int)(aryDateTime.group(4)) , day=(int)(aryDateTime.group(5)) , 
+            dateDateTime = datetime.datetime( year=(int)(aryDateTime.group(3)) , month=(int)(aryDateTime.group(4)) , day=(int)(aryDateTime.group(5)) ,
                                               hour=(int)(aryDateTime.group(6)) , minute=(int)(aryDateTime.group(7)) , second=(int)(aryDateTime.group(8)) )
             if g_dateEarliest < dateDateTime and dateDateTime < datetime.datetime.now() :
                 dateFinal = dateDateTime
@@ -236,6 +236,8 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                     dateEncoded = dateEncoded - datetime.timedelta( milliseconds=track.duration )
                 if g_dateEarliest < dateEncoded and dateEncoded < dateFinal :
                     dateFinal = dateEncoded
+                # iPhone might set incorrect creation/modification time, so break here if encoded date exists
+                break
             if track.file_creation_date__local :
                 dateCreation = datetime.datetime.strptime( track.file_creation_date__local , "%Y-%m-%d %H:%M:%S.%f" )
                 if g_dateEarliest < dateCreation and dateCreation < dateFinal :
@@ -244,7 +246,7 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                 dateModification = datetime.datetime.strptime( track.file_last_modification_date__local , "%Y-%m-%d %H:%M:%S.%f" )
                 if g_dateEarliest < dateModification and dateModification < dateFinal :
                     dateFinal = dateModification
-            
+
             if dateFinal != dateNow :
                 break
     else :
