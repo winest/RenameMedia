@@ -12,10 +12,14 @@ var WshShell = WScript.CreateObject( "WScript.Shell" );
 var WshEnv = WshShell.Environment( "Process" )
 WScript.Echo( "Current directory is \"" + WshShell.CurrentDirectory + "\"" );
 
-var strFilePath32 = GetFilePath( "python.exe" , null , ["%PATH%"] );
+var strFilePath32 = GetVenvPython();
 if ( strFilePath32.length == 0 )
 {
-    WScript.Echo( "Cannot find python.exe in current folder or PATH" );
+    strFilePath32 = GetFilePath( "python.exe" , null , ["%PATH%"] );
+}
+if ( strFilePath32.length == 0 )
+{
+    WScript.Echo( "Cannot find python.exe in .venv, venv, current folder or PATH" );
     WScript.Quit( -1 );
 }
 WScript.Echo( "FilePath32 is \"" + strFilePath32 + "\"" );
@@ -48,6 +52,23 @@ function WriteReg( aValName , aValContent , aValType )
     {
         return false;
     }
+}
+
+function GetVenvPython()
+{
+    //A virtual environment in this folder takes priority over the system python,
+    //because exifread and pymediainfo are usually installed only inside it
+    var aryVenvDirs = [ ".venv" , "venv" ];
+    for ( var i in aryVenvDirs )
+    {
+        var strPath = WshShell.CurrentDirectory + "\\" + aryVenvDirs[i] + "\\Scripts\\python.exe";
+        if ( WshFileSystem.FileExists( strPath ) )
+        {
+            WScript.Echo( "Found virtual environment \"" + aryVenvDirs[i] + "\"" );
+            return strPath;
+        }
+    }
+    return "";
 }
 
 function GetFilePath( aFileName , aSearchDirList , aSearchEnvList )

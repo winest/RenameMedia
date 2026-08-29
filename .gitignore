@@ -1,1 +1,6 @@
 Logs 
+Output
+build
+dist
+*.spec
+__pycache__

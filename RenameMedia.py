@@ -23,23 +23,33 @@ g_reAlreadyRenamed = re.compile( r"^(.*?-)?[0-9]{8}_[0-9]{6}(-.*)?$" )
 
 
 
+#A description is only a description when it is separated by "-". Without the mandatory
+#"-", "(.*?)-?" also swallows a camera prefix, so IMG_20260829_152440.jpg ends up with
+#the comment "-IMG_" instead of no comment at all.
+g_strLeadComment = r"^(?:(.*?)-)?"
+g_strTailComment = r"(?:-(.*))?$"
+
+#Anything glued to the front with "_" is a camera or app prefix such as IMG_, MVIMG_,
+#SKY_, Screenshot_, C360_ or FB_IMG_, never a description. Every segment must start with
+#a letter, so the prefix cannot eat the leading digits of the timestamp that follows, and
+#the trailing "_" is mandatory so it cannot eat a "-" separated description either.
+g_strPrefix = r"(?:([A-Za-z][A-Za-z0-9]*(?:_[A-Za-z][A-Za-z0-9]*)*)_)?"
+
 #My-Description-call_17-25-55_IN_0934023893-My-Description
-g_reCallLogInfo = re.compile( r"^(.*?)-?call_([0-9]{2})-([0-9]{2})-([0-9]{2})_(IN|OUT)_([0-9]{7,})-?(.*)$" )
+g_reCallLogInfo = re.compile( g_strLeadComment + r"call_([0-9]{2})-([0-9]{2})-([0-9]{2})_(IN|OUT)_([0-9]{7,})" + g_strTailComment )
 
 #My-Description-00000PORTRAIT_00000_BURST20180219112226674-My-Description
 #My-Description-00100dPORTRAIT_00100_BURST20180219112230359_COVER-My-Description
-g_reProtrait = re.compile( r"^(.*?)-?([0-9]+)?PORTRAIT_([0-9]+)?_BURST([0-9]+)?(_COVER)?-?(.*)$" )
+g_reProtrait = re.compile( g_strLeadComment + r"([0-9]+)?[a-z]?PORTRAIT_([0-9]+)?_BURST([0-9]+)?(_COVER)?" + g_strTailComment )
 
 #My-Description-Screenshot_2016-07-31-20-50-59-My-Description, My-Description-C360_2016-07-31-20-50-59-123-My-Description
-g_reDateTime = re.compile( r"^(.*?)-?(Screenshot|C360|Recorder|ToramOnlineScreenshot)?[-_]?([0-9]{4})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})([ _:-][0-9]{3})?-?(.*)$" )
+g_reDateTime = re.compile( g_strLeadComment + g_strPrefix + r"([0-9]{4})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})[ _:-]([0-9]{2})([ _:-][0-9]{3})?" + g_strTailComment )
 
 #My-Description-SKY_20201103_052334_-My-Description, My-Description-SKY_20200819_000334_3083294833422349157-My-Description
-g_reDateTimeBetter = re.compile( r"^(.*?)-?(SKY_)?([0-9]{8}_[0-9]{6})_?([0-9]+)?-?(.*)?$" )
+g_reDateTimeBetter = re.compile( g_strLeadComment + g_strPrefix + r"([0-9]{8}_[0-9]{6})_?([0-9]+)?" + g_strTailComment )
 
 #My-Description-1472373079120-My-Description, My-Description-FB_IMG_1469184029530-My-Description
-g_reTimeStamp = re.compile( r"^(.*?)-?(FB_IMG)?[_-]?([0-9]{10,13})-?(.*)$" )
-
-g_reUselessComment = re.compile( r"^-(IMG|PANO|VID)_$" )
+g_reTimeStamp = re.compile( g_strLeadComment + g_strPrefix + r"([0-9]{10,13})" + g_strTailComment )
 
 
 
@@ -58,64 +68,60 @@ def GetNewFileName( aDirName , aBaseName , aExt ) :
 
 
 
-#Get comments from the original file name
+#Append aText to aList when it carries something
+def AppendComment( aList , aText ) :
+    if aText and 0 < len( aText ) :
+        aList.append( aText )
+
+
+
+#Get the comments from the original file name, split into the part that was written in
+#front of the timestamp and the part that followed it, so that a comment keeps its
+#original side, e.g. My-Description-IMG_20260123_112233 => My-Description-20260123_112233
 def GetComments( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
-    strComment = ""
+    lsLead = []
+    lsTail = []
     for count in range( 1 ) :
         #My-Description-call_17-25-55_IN_0934023893-My-Description
         aryCallLogInfo = g_reCallLogInfo.match( aBaseName )
         if ( aryCallLogInfo ) :
-            if aryCallLogInfo.group(6) and len( aryCallLogInfo.group(6) ) > 0 :
-                strComment += "-" + aryCallLogInfo.group( 6 )
-            if aryCallLogInfo.group(5) and len( aryCallLogInfo.group(5) ) > 0 :
-                strComment += "-" + aryCallLogInfo.group( 5 )
-            if aryCallLogInfo.group(1) and len( aryCallLogInfo.group(1) ) > 0 :
-                strComment += "-" + aryCallLogInfo.group( 1 )
-            if aryCallLogInfo.group(7) and len( aryCallLogInfo.group(7) ) > 0 :
-                strComment += "-" + aryCallLogInfo.group( 7 )
+            AppendComment( lsLead , aryCallLogInfo.group(1) )
+            AppendComment( lsTail , aryCallLogInfo.group(6) )
+            AppendComment( lsTail , aryCallLogInfo.group(5) )
+            AppendComment( lsTail , aryCallLogInfo.group(7) )
             break
 
         #My-Description-00000PORTRAIT_00000_BURST20180219112226674-My-Description
         #My-Description-00100dPORTRAIT_00100_BURST20180219112230359_COVER-My-Description
         aryCallPortrait = g_reProtrait.match( aBaseName )
         if ( aryCallPortrait ) :
-            if aryCallPortrait.group(1) and len( aryCallPortrait.group(1) ) > 0 :
-                strComment += "-" + aryCallPortrait.group( 1 )
-            if aryCallPortrait.group(6) and len( aryCallPortrait.group(6) ) > 0 :
-                strComment += "-" + aryCallPortrait.group( 6 )
+            AppendComment( lsLead , aryCallPortrait.group(1) )
+            AppendComment( lsTail , aryCallPortrait.group(6) )
             break
 
         #My-Description-C360_2016-07-31-20-50-59-123-My-Description
         aryDateTime = g_reDateTime.match( aBaseName )
         if ( aryDateTime ) :
-            if aryDateTime.group(1) and len( aryDateTime.group(1) ) > 0 :
-                strComment += "-" + aryDateTime.group( 1 )
-            if aryDateTime.group(10) and len( aryDateTime.group(10) ) > 0 :
-                strComment += "-" + aryDateTime.group( 10 )
+            AppendComment( lsLead , aryDateTime.group(1) )
+            AppendComment( lsTail , aryDateTime.group(10) )
             break
 
         #My-Description-SKY_20201103_052334_-My-Description
         #My-Description-SKY_20200819_000334_3083294833422349157-My-Description
         aryDateTimeBetter = g_reDateTimeBetter.match( aBaseName )
         if ( aryDateTimeBetter ) :
-            if aryDateTimeBetter.group(1) and len( aryDateTimeBetter.group(1) ) > 0 :
-                strComment += "-" + aryDateTimeBetter.group( 1 )
-            if aryDateTimeBetter.group(5) and len( aryDateTimeBetter.group(5) ) > 0 :
-                strComment += "-" + aryDateTimeBetter.group( 5 )
+            AppendComment( lsLead , aryDateTimeBetter.group(1) )
+            AppendComment( lsTail , aryDateTimeBetter.group(5) )
             break
 
         #My-Description-FB_IMG_1469184029530-My-Description
         aryTimeStamp = g_reTimeStamp.match( aBaseName )
         if ( aryTimeStamp ) :
-            if aryTimeStamp.group(1) and len( aryTimeStamp.group(1) ) > 0 :
-                strComment += "-" + aryTimeStamp.group( 1 )
-            if aryTimeStamp.group(4) and len( aryTimeStamp.group(4) ) > 0 :
-                strComment += "-" + aryTimeStamp.group( 4 )
+            AppendComment( lsLead , aryTimeStamp.group(1) )
+            AppendComment( lsTail , aryTimeStamp.group(4) )
             break
 
-    if g_reUselessComment.match(strComment):
-        strComment = None
-    return strComment
+    return "-".join( lsLead ) , "-".join( lsTail )
 
 
 
@@ -129,9 +135,11 @@ def TryRenameFile( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
                     GetTimeByMediaInfo( strPath , strDir , strFileName , strBaseName , strExt )
         strNewBaseName = dateFinal.strftime( "%Y%m%d_%H%M%S" )
 
-        strComment = GetComments( strPath , strDir , strFileName , strBaseName , strExt )
-        if len(strComment) > 0 :
-            strNewBaseName += strComment
+        strLeadComment , strTailComment = GetComments( strPath , strDir , strFileName , strBaseName , strExt )
+        if strTailComment :
+            strNewBaseName = strNewBaseName + "-" + strTailComment
+        if strLeadComment :
+            strNewBaseName = strLeadComment + "-" + strNewBaseName
 
         strNewFileName = GetNewFileName( aDirName , strNewBaseName , aExt )
         logging.info( "{} => {}".format(aFileName , strNewFileName) )
@@ -260,7 +268,13 @@ def GetTimeByMediaInfo( aFilePath , aDirName , aFileName , aBaseName , aExt ) :
 
 
 if __name__ == "__main__" :
-    strScriptDir = os.path.dirname( os.path.realpath(__file__) )
+    if getattr( sys , "frozen" , False ) :
+        #Logs go next to the exe, while _Tools is unpacked by PyInstaller into sys._MEIPASS
+        strScriptDir = os.path.dirname( os.path.realpath(sys.executable) )
+        strDataDir = getattr( sys , "_MEIPASS" , strScriptDir )
+    else :
+        strScriptDir = os.path.dirname( os.path.realpath(__file__) )
+        strDataDir = strScriptDir
     strLogDir = "{}\\Logs".format( strScriptDir )
     if not os.path.isdir( strLogDir ) :
         os.makedirs( strLogDir )
@@ -268,6 +282,14 @@ if __name__ == "__main__" :
     strPath = os.path.realpath( os.getcwd() )
     if ( 2 <= len(sys.argv) ) :
         strPath = os.path.realpath( sys.argv[1] )
+
+    #The console uses the OS locale encoding (cp1252 on an English Windows), which cannot
+    #encode paths containing characters outside it. Without this, logging a path such as
+    #"C:\\Temp\\測試\\a.jpg" raises UnicodeEncodeError from the charmap codec and the whole
+    #log record is dropped instead of being written.
+    for stream in ( sys.stdout , sys.stderr ) :
+        if stream is not None and hasattr( stream , "reconfigure" ) :
+            stream.reconfigure( errors="backslashreplace" )
 
     logger = logging.getLogger()
     logger.setLevel( logging.INFO )
@@ -278,17 +300,17 @@ if __name__ == "__main__" :
     logger.addHandler( consoleHandler )
 
     fmtFile = logging.Formatter( "[%(asctime)s][%(levelname)s][%(process)04X:%(thread)04X][%(filename)s][%(funcName)s_%(lineno)d]: %(message)s" )
-    fileHandler = logging.FileHandler( "{}\\{}-{}.txt".format(strLogDir , os.path.basename(strPath) , datetime.datetime.now().strftime("%Y%m%d_%H%M%S")) )
+    fileHandler = logging.FileHandler( "{}\\{}-{}.txt".format(strLogDir , os.path.basename(strPath) , datetime.datetime.now().strftime("%Y%m%d_%H%M%S")) , encoding="utf-8" )
     fileHandler.setFormatter( fmtFile )
     logger.addHandler( fileHandler )
 
 
 
-    reFilter = re.compile( ".*\.(bmp|jpg|jpeg|png|gif|heic|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
+    reFilter = re.compile( r".*\.(bmp|jpg|jpeg|png|gif|heic|mp3|mp4|mov|m4a|avi|amr|aac|flac)$" , re.IGNORECASE )
     try :
         #Add _Tools directory to %PATH%
         if os.environ["PATH"].find( "MediaInfo" ) == -1 :
-            strToolDir = "{}\\_Tools\\x86\\".format( strScriptDir )
+            strToolDir = "{}\\_Tools\\x86\\".format( strDataDir )
             os.environ["PATH"] = strToolDir + ";" + os.environ["PATH"]
 
         logging.info( "Search {} under \"{}\"".format(reFilter,strPath) )
