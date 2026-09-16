@@ -1,0 +1,4 @@
+av
+azure-identity
+requests
+opencc-python-reimplemented
