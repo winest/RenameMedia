@@ -19,6 +19,7 @@ Three independent scripts, each self-contained:
 - Empty-folder cleanup deletes only `.nomedia`, `Thumbs.db`, and `.DS_Store`. Anything else keeps the folder.
 - Transcription cache keys include the endpoint, model, locale, and prompt, so changing a request setting invalidates the cache. Do not change them casually.
 - `run` charges money and renames files. It has no preview mode; use `samples` first. Requests with an unknown billing outcome pause instead of retrying.
+- Media without speech gets no `.srt` at all. An empty subtitle is never written, and the media keeps its original name.
 - Logs, JSON, and subtitles are UTF-8. The console may still be cp1252, so keep the safe stream handling.
 - `GenerateExe.bat` uses `--onedir`. `--onefile` unpacks DLLs into `%TEMP%`, which Smart App Control blocks.
 

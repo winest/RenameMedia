@@ -985,6 +985,23 @@ class PublicationTests(unittest.TestCase):
                 publish_pair(job, state, "generated", threading.Lock())
             self.assertEqual(source.read_bytes(), b"changed media")
 
+    def test_media_without_speech_publishes_no_subtitle(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            job, state = self.make_job(root)
+            job.pop("title")
+            source = Path(job["source"])
+            publish_pair(job, state, "", threading.Lock())
+            self.assertIsNone(job["sidecar"])
+            self.assertEqual(job["phase"], "done")
+            self.assertEqual(Path(job["destination"]), source)
+            self.assertEqual(source.read_bytes(), b"original media")
+            self.assertFalse(Path(job["staging"]).exists())
+            self.assertEqual(list(root.glob("*.srt")), [])
+            publish_pair(json.loads(state.read_text()), state, "", threading.Lock())
+            self.assertEqual(source.read_bytes(), b"original media")
+            self.assertEqual(list(root.glob("*.srt")), [])
+
     def test_duplicate_runner_is_blocked(self):
         with tempfile.TemporaryDirectory() as temp:
             with exclusive_run(Path(temp)):

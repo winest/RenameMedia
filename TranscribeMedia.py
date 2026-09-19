@@ -551,18 +551,26 @@ def process_samples(selection, speech_config, text_config, cache, region, text_t
                 save_json(state_path, state)
             name = stamp + "-" + state["title"] if subtitle else source.stem
             proposed = source.with_name(name + source.suffix)
+            sample_srt = cache / (identity + ".srt")
             state["proposed_media"] = str(proposed)
-            state["proposed_srt"] = str(proposed.with_suffix(".srt"))
+            state["proposed_srt"] = str(proposed.with_suffix(".srt")) if subtitle else None
             state["no_speech"] = not bool(subtitle)
             state["subtitle_conversion"] = "OpenCC s2t"
             state["subtitle_layout"] = "short" if short_subtitles else "phrase"
             # Samples are review artifacts; source names remain unchanged until approval.
-            (cache / (identity + ".srt")).write_text(subtitle, encoding="utf-8")
+            # Media without speech produces no subtitle file, so a stale one is removed.
+            if subtitle:
+                sample_srt.write_text(subtitle, encoding="utf-8")
+            elif sample_srt.exists():
+                sample_srt.unlink()
             save_json(state_path, state)
             outcomes.append(dict(source=str(source), proposed_media=str(proposed),
-                                 srt=str(cache / (identity + ".srt")), state=str(state_path),
-                                 no_speech=state["no_speech"]))
-            logging.info("Prepared subtitle and title proposal: %s", proposed.name)
+                                 srt=str(sample_srt) if subtitle else None,
+                                 state=str(state_path), no_speech=state["no_speech"]))
+            if subtitle:
+                logging.info("Prepared subtitle and title proposal: %s", proposed.name)
+            else:
+                logging.info("No speech detected; keeping the original name: %s", proposed.name)
     save_json(cache / "samples.json", outcomes)
 
 
@@ -970,6 +978,15 @@ def choose_pair_paths(source, stem):
     raise FileExistsError("Could not find a free media/subtitle name")
 
 
+def publish_media(job, source, destination):
+    if source.exists():
+        verify_file(source, job["fingerprint"])
+        if source != destination:
+            os.rename(source, destination)
+    else:
+        verify_file(destination, job["fingerprint"])
+
+
 def publish_pair(job, job_path, subtitle, rename_lock):
     source = Path(job["source"])
     with rename_lock:
@@ -979,7 +996,8 @@ def publish_pair(job, job_path, subtitle, rename_lock):
             stem = target_stem(source, job.get("title"), job.get("embedded_timestamp"))
             destination, sidecar = choose_pair_paths(source, stem)
             job.update(
-                destination=str(destination), sidecar=str(sidecar),
+                # Media without speech keeps no subtitle file, so there is nothing to publish.
+                destination=str(destination), sidecar=str(sidecar) if subtitle else None,
                 staging=str(source.parent / (".renamemedia-" + job_path.stem + ".tmp")),
                 subtitle_sha256=hashlib.sha256(subtitle.encode("utf-8")).hexdigest(),
                 timestamp_source=(
@@ -990,12 +1008,14 @@ def publish_pair(job, job_path, subtitle, rename_lock):
             )
             save_json(job_path, job)
         destination = Path(job["destination"])
-        sidecar = Path(job["sidecar"])
+        sidecar = Path(job["sidecar"]) if job["sidecar"] else None
         staging = Path(job["staging"])
         expected_hash = job["subtitle_sha256"]
         if hashlib.sha256(subtitle.encode("utf-8")).hexdigest() != expected_hash:
             raise ValueError("Prepared subtitle changed; refusing to publish a different result")
-        if sidecar.exists():
+        if sidecar is None:
+            publish_media(job, source, destination)
+        elif sidecar.exists():
             if (source != destination and source.exists()) or staging.exists():
                 raise FileExistsError("Unexpected subtitle appeared before pair commit")
             verify_file(destination, job["fingerprint"])
@@ -1010,12 +1030,7 @@ def publish_pair(job, job_path, subtitle, rename_lock):
                     file.write(subtitle.encode("utf-8"))
                     file.flush()
                     os.fsync(file.fileno())
-            if source.exists():
-                verify_file(source, job["fingerprint"])
-                if source != destination:
-                    os.rename(source, destination)
-            else:
-                verify_file(destination, job["fingerprint"])
+            publish_media(job, source, destination)
             job["phase"] = "media_renamed"
             save_json(job_path, job)
             os.rename(staging, sidecar)
@@ -1163,7 +1178,9 @@ class BulkRun:
                 return "deleted"
             if job["phase"] == "done":
                 verify_file(Path(job["destination"]), job["fingerprint"])
-                if hashlib.sha256(Path(job["sidecar"]).read_bytes()).hexdigest() != job["subtitle_sha256"]:
+                if job["sidecar"] and hashlib.sha256(
+                    Path(job["sidecar"]).read_bytes()
+                ).hexdigest() != job["subtitle_sha256"]:
                     raise ValueError("Published subtitle was modified or removed")
                 return job.get("result_status", "done")
             cached_subtitle = self.cache / "subtitles" / (key + ".srt")

@@ -27,7 +27,7 @@ python TranscribeMedia.py run "inventory.json" --speech-config "speech.json" --t
 - Recordings: `YYYYMMDD_HHMMSS-place-summary.mp3`.
 - Calls: `YYYYMMDD_HHMMSS-phone(contact)-IN-summary.m4a` (`IN` = incoming, `OUT` = outgoing).
 
-Extensions and existing timestamps are preserved. Transcription adds a summary when available; unknown place, phone, contact, or direction fields are omitted, not invented. Subtitles share the media basename with `.srt`.
+Extensions and existing timestamps are preserved. Transcription adds a summary when available; unknown place, phone, contact, or direction fields are omitted, not invented. Subtitles share the media basename with `.srt`; media without speech gets no `.srt` and keeps its original name.
 
 [Build](GenerateExe.bat) | [Design notes](.github/copilot-instructions.md)
 
